@@ -83,6 +83,40 @@ public class ExDAO implements iExDAO{
     public void delete(int id) {
 
     }
+
+    @Override
+    public void addObjTransaction(ExObj obj, List<Integer> permissions) {
+        try {
+            Connection connection = getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO exobj (name) value (?)", Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1,obj.getName());
+            int rowChanged = ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+
+            int objId  = 0;
+            if (rs.next()){
+                objId = rs.getInt(1);
+            }
+
+            if (rowChanged == 1){
+                for (int permission: permissions
+                     ) {
+                    PreparedStatement psPer = connection.prepareStatement("insert into objpermission values (?,?);");
+                    psPer.setInt(1,objId);
+                    psPer.setInt(2,permission);
+                    psPer.executeUpdate();
+                }
+                connection.commit();
+            }
+            connection.rollback();
+            connection.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void printRs(ResultSet rs) throws SQLException {
         while (rs.next()){
             System.out.println(rs.getString("name"));

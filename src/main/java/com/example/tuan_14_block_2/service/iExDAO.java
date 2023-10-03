@@ -9,5 +9,5 @@ public interface iExDAO {
     public ExObj getById(int id);
     public void addObj(ExObj Obj);
     public void delete(int id);
-
+    void addObjTransaction(ExObj obj, List<Integer> permissions);
 }
